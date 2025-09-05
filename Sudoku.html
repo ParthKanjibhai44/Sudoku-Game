@@ -95,8 +95,11 @@
     <div class="w-full max-w-md mx-auto">
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-4xl font-bold text-gray-700">Sudoku</h1>
-            <div id="attempts-container" class="text-xl font-semibold text-gray-600">
-                <!-- Attempts will be rendered here by JS -->
+            <div class="flex items-center gap-2">
+                <div id="attempts-container" class="text-xl font-semibold text-gray-600">
+                    <!-- Attempts will be rendered here by JS -->
+                </div>
+                <button id="hint-btn" class="px-3 py-1.5 bg-yellow-500 text-white font-semibold rounded-md shadow-md hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-75 transition-transform transform hover:scale-105">Hint</button>
             </div>
         </div>
 
@@ -140,6 +143,7 @@
             const solveBtn = document.getElementById('solve-btn');
             const messageBox = document.getElementById('message-box');
             const attemptsContainer = document.getElementById('attempts-container');
+            const hintBtn = document.getElementById('hint-btn');
             const difficultyTabs = document.getElementById('difficulty-tabs');
 
             let board = [];
@@ -147,6 +151,8 @@
             let failureAttempts = MAX_ATTEMPTS;
             let isGameOver = false;
             let currentDifficulty = 'Medium';
+            const MAX_HINTS = 3;
+            let remainingHints = MAX_HINTS;
 
             const DIFFICULTY_SETTINGS = {
                 Easy: 35,
@@ -359,7 +365,18 @@
             }
 
             function updateAttemptsUI() {
-                attemptsContainer.innerHTML = `Attempts: ${'❤️'.repeat(failureAttempts)}${'🤍'.repeat(MAX_ATTEMPTS - failureAttempts)}`;
+                const used = MAX_ATTEMPTS - failureAttempts;
+                attemptsContainer.innerHTML = `Attempts: ${used}/${MAX_ATTEMPTS}`;
+            }
+
+            function updateHintUI() {
+                hintBtn.textContent = `Hint (${remainingHints})`;
+                hintBtn.disabled = isGameOver || remainingHints <= 0;
+                if (hintBtn.disabled) {
+                    hintBtn.classList.add('opacity-60', 'cursor-not-allowed');
+                } else {
+                    hintBtn.classList.remove('opacity-60', 'cursor-not-allowed');
+                }
             }
 
             // --- Game Logic ---
@@ -427,11 +444,40 @@
                 showMessage("Here is the solution!", "info");
                 gameOver();
             }
+
+            function giveHint() {
+                if (isGameOver) return;
+                if (remainingHints <= 0) {
+                    showMessage('No hints left.', 'error');
+                    updateHintUI();
+                    return;
+                }
+                // Find selected cell
+                const selected = document.querySelector('.sudoku-cell.selected');
+                if (!selected) {
+                    showMessage('Select a cell to get a hint.', 'info');
+                    return;
+                }
+                const row = parseInt(selected.dataset.row);
+                const col = parseInt(selected.dataset.col);
+                if (selected.readOnly) {
+                    showMessage('This cell is pre-filled.', 'info');
+                    return;
+                }
+                // Fill the correct value without consuming attempts
+                selected.value = solution[row][col];
+                selected.classList.remove('incorrect');
+                selected.classList.add('text-blue-600', 'font-bold');
+                showMessage('Hint applied to the selected cell.', 'info');
+                remainingHints--;
+                updateHintUI();
+            }
             
             function gameOver() {
                 isGameOver = true;
                 document.querySelectorAll('.sudoku-cell:not(.pre-filled)').forEach(cell => cell.readOnly = true);
                 checkBtn.disabled = true;
+                updateHintUI();
             }
 
             function startNewGame() {
@@ -439,15 +485,18 @@
                 failureAttempts = MAX_ATTEMPTS;
                 checkBtn.disabled = false;
                 updateAttemptsUI();
+                remainingHints = MAX_HINTS;
                 generatePuzzle();
                 createGrid();
                 showMessage("New game started. Good luck!", "info");
+                updateHintUI();
             }
 
             // --- Event Listeners ---
             newGameBtn.addEventListener('click', startNewGame);
             checkBtn.addEventListener('click', checkSolution);
             solveBtn.addEventListener('click', solvePuzzle);
+            hintBtn.addEventListener('click', giveHint);
             difficultyTabs.addEventListener('click', (e) => {
                 const target = e.target;
                 if (target && target.matches('button[data-difficulty]')) {
