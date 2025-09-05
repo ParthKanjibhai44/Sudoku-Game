@@ -79,3 +79,9 @@ body {
 #message-box {
   transition: opacity 0.5s, transform 0.5s;
 }
+
+/* Timer */
+.timer {
+  min-width: 64px; /* fits 00:00 */
+  text-align: center;
+}

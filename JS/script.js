@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const attemptsContainer = document.getElementById("attempts-container");
   const hintBtn = document.getElementById("hint-btn");
   const difficultyTabs = document.getElementById("difficulty-tabs");
+  const timerEl = document.getElementById("timer");
 
   let board = [];
   let solution = [];
@@ -21,6 +22,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentDifficulty = "Medium";
   const MAX_HINTS = 3;
   let remainingHints = MAX_HINTS;
+  let timerInterval = null;
+  let elapsedSeconds = 0;
 
   const DIFFICULTY_SETTINGS = {
     Easy: 35,
@@ -298,6 +301,32 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // --- Timer Logic ---
+  function formatTime(totalSeconds) {
+    const m = Math.floor(totalSeconds / 60)
+      .toString()
+      .padStart(2, "0");
+    const s = (totalSeconds % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
+  }
+
+  function startTimer() {
+    stopTimer();
+    elapsedSeconds = 0;
+    timerEl.textContent = "00:00";
+    timerInterval = setInterval(() => {
+      elapsedSeconds += 1;
+      timerEl.textContent = formatTime(elapsedSeconds);
+    }, 1000);
+  }
+
+  function stopTimer() {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+  }
+
   function checkSolution() {
     if (isGameOver) return;
 
@@ -323,6 +352,7 @@ document.addEventListener("DOMContentLoaded", () => {
       showMessage("Congratulations! You solved it correctly!", "success");
       isGameOver = true;
       checkBtn.disabled = true;
+      stopTimer();
     } else {
       failureAttempts--;
       updateAttemptsUI();
@@ -351,6 +381,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     showMessage("Here is the solution!", "info");
     gameOver();
+    stopTimer();
   }
 
   function giveHint() {
@@ -388,6 +419,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .forEach((cell) => (cell.readOnly = true));
     checkBtn.disabled = true;
     updateHintUI();
+    stopTimer();
   }
 
   function startNewGame() {
@@ -400,6 +432,7 @@ document.addEventListener("DOMContentLoaded", () => {
     createGrid();
     showMessage("New game started. Good luck!", "info");
     updateHintUI();
+    startTimer();
   }
 
   // --- Event Listeners ---
