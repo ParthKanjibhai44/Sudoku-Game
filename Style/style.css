@@ -1,0 +1,81 @@
+body {
+  font-family: "Inter", sans-serif;
+  touch-action: manipulation; /* Prevents double-tap zoom on mobile */
+}
+/* Style for the Sudoku grid cells */
+.sudoku-cell {
+  width: clamp(30px, 10vw, 50px);
+  height: clamp(30px, 10vw, 50px);
+  text-align: center;
+  font-size: clamp(16px, 5vw, 24px);
+  border: 1px solid #d1d5db; /* gray-300 */
+  caret-color: #3b82f6; /* blue-500 */
+  transition: all 0.2s ease-in-out;
+}
+/* Thicker borders for the 3x3 subgrids */
+.sudoku-cell:nth-child(3n) {
+  border-right-width: 3px;
+  border-right-color: #374151; /* gray-700 */
+}
+.sudoku-cell:nth-child(9n) {
+  border-right-width: 1px;
+  border-right-color: #d1d5db;
+}
+#sudoku-grid .row:nth-child(3n) .sudoku-cell {
+  border-bottom-width: 3px;
+  border-bottom-color: #374151; /* gray-700 */
+}
+#sudoku-grid .row:last-child .sudoku-cell {
+  border-bottom-width: 1px;
+  border-bottom-color: #d1d5db;
+}
+#sudoku-grid .row .sudoku-cell:first-child {
+  border-left-width: 3px;
+  border-left-color: #374151;
+}
+#sudoku-grid .row .sudoku-cell:last-child {
+  border-right-width: 3px;
+  border-right-color: #374151;
+}
+#sudoku-grid .row:first-child .sudoku-cell {
+  border-top-width: 3px;
+  border-top-color: #374151;
+}
+#sudoku-grid .row:nth-child(9) .sudoku-cell {
+  border-bottom-width: 3px;
+  border-bottom-color: #374151;
+}
+/* Styling for pre-filled cells */
+.pre-filled {
+  background-color: #f3f4f6; /* gray-100 */
+  color: #1f2937; /* gray-800 */
+  font-weight: 600;
+}
+/* Highlight for selected cell and its row/column/box */
+.highlight {
+  background-color: #dbeafe; /* blue-100 */
+}
+.selected {
+  background-color: #93c5fd !important; /* blue-300 */
+  box-shadow: 0 0 0 2px #3b82f6; /* blue-500 */
+  z-index: 10;
+}
+/* Remove number input spinner arrows */
+.sudoku-cell::-webkit-outer-spin-button,
+.sudoku-cell::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.sudoku-cell[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+/* Style for incorrect user-entered numbers */
+.incorrect {
+  background-color: #fecaca; /* red-200 */
+  color: #b91c1c; /* red-700 */
+}
+/* Styles for the message box */
+#message-box {
+  transition: opacity 0.5s, transform 0.5s;
+}
