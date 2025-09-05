@@ -258,6 +258,9 @@
                 const enteredNum = parseInt(value);
                 if (enteredNum !== solution[row][col]) {
                     cell.classList.add('incorrect');
+                    // Penalize immediately for a wrong input and clear the cell
+                    penalizeMistake();
+                    cell.value = '';
                 }
             }
 
@@ -317,6 +320,18 @@
             }
 
             // --- Game Logic ---
+
+            function penalizeMistake() {
+                if (isGameOver) return;
+                failureAttempts--;
+                updateAttemptsUI();
+                if (failureAttempts > 0) {
+                    showMessage(`Wrong number. You have ${failureAttempts} attempts left.`, "error");
+                } else {
+                    showMessage("3 mistakes made. Restarting game...", "error");
+                    startNewGame();
+                }
+            }
 
             function checkSolution() {
                 if (isGameOver) return;
