@@ -69,6 +69,16 @@
             box-shadow: 0 0 0 2px #3b82f6; /* blue-500 */
             z-index: 10;
         }
+        /* Remove number input spinner arrows */
+        .sudoku-cell::-webkit-outer-spin-button,
+        .sudoku-cell::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .sudoku-cell[type=number] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
         /* Style for incorrect user-entered numbers */
         .incorrect {
             background-color: #fecaca; /* red-200 */
@@ -87,6 +97,16 @@
             <h1 class="text-4xl font-bold text-gray-700">Sudoku</h1>
             <div id="attempts-container" class="text-xl font-semibold text-gray-600">
                 <!-- Attempts will be rendered here by JS -->
+            </div>
+        </div>
+
+        <!-- Difficulty Tabs -->
+        <div class="w-full flex justify-center mb-4">
+            <div id="difficulty-tabs" role="tablist" aria-label="Select difficulty" class="inline-flex bg-gray-100 rounded-lg p-1">
+                <button role="tab" aria-selected="false" data-difficulty="Easy" class="px-3 py-1.5 text-sm font-medium rounded-md focus:outline-none">Easy</button>
+                <button role="tab" aria-selected="false" data-difficulty="Medium" class="px-3 py-1.5 text-sm font-medium rounded-md focus:outline-none">Medium</button>
+                <button role="tab" aria-selected="false" data-difficulty="Hard" class="px-3 py-1.5 text-sm font-medium rounded-md focus:outline-none">Hard</button>
+                <button role="tab" aria-selected="false" data-difficulty="Extreme" class="px-3 py-1.5 text-sm font-medium rounded-md focus:outline-none">Extreme</button>
             </div>
         </div>
 
@@ -120,11 +140,20 @@
             const solveBtn = document.getElementById('solve-btn');
             const messageBox = document.getElementById('message-box');
             const attemptsContainer = document.getElementById('attempts-container');
+            const difficultyTabs = document.getElementById('difficulty-tabs');
 
             let board = [];
             let solution = [];
             let failureAttempts = MAX_ATTEMPTS;
             let isGameOver = false;
+            let currentDifficulty = 'Medium';
+
+            const DIFFICULTY_SETTINGS = {
+                Easy: 35,
+                Medium: 45,
+                Hard: 55,
+                Extreme: 60
+            };
 
             // --- Board Generation ---
 
@@ -139,7 +168,8 @@
                     solution[i] = [...board[i]];
                 }
 
-                pokeHoles(45); // Adjust number for difficulty (e.g., 40-55)
+                // Remove numbers according to selected difficulty
+                pokeHoles(DIFFICULTY_SETTINGS[currentDifficulty] || 45);
             }
 
             function solveSudoku(grid) {
@@ -233,6 +263,19 @@
                     }
                     gridElement.appendChild(rowDiv);
                 }
+            }
+
+            function updateDifficultyTabsUI() {
+                const buttons = difficultyTabs.querySelectorAll('button[data-difficulty]');
+                buttons.forEach(btn => {
+                    const isActive = btn.dataset.difficulty === currentDifficulty;
+                    btn.classList.toggle('bg-white', isActive);
+                    btn.classList.toggle('text-gray-800', isActive);
+                    btn.classList.toggle('shadow', isActive);
+                    btn.classList.toggle('text-gray-600', !isActive);
+                    btn.classList.toggle('hover:text-gray-800', !isActive);
+                    btn.setAttribute('aria-selected', String(isActive));
+                });
             }
             
             function handleInput(e) {
@@ -405,8 +448,17 @@
             newGameBtn.addEventListener('click', startNewGame);
             checkBtn.addEventListener('click', checkSolution);
             solveBtn.addEventListener('click', solvePuzzle);
+            difficultyTabs.addEventListener('click', (e) => {
+                const target = e.target;
+                if (target && target.matches('button[data-difficulty]')) {
+                    currentDifficulty = target.dataset.difficulty;
+                    updateDifficultyTabsUI();
+                    startNewGame();
+                }
+            });
 
             // --- Initial Load ---
+            updateDifficultyTabsUI();
             startNewGame();
         });
     </script>
