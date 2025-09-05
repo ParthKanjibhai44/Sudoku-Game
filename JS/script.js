@@ -189,7 +189,10 @@ document.addEventListener("DOMContentLoaded", () => {
       // Penalize immediately for a wrong input and clear the cell
       penalizeMistake();
       cell.value = "";
+      return;
     }
+    // Correct input: check for completed row/column animation
+    maybeAnimateCompletion(row, col);
   }
 
   function handleKeyDown(e) {
@@ -410,6 +413,57 @@ document.addEventListener("DOMContentLoaded", () => {
     showMessage("Hint applied to the selected cell.", "info");
     remainingHints--;
     updateHintUI();
+    // After hint, check for completed line animation
+    maybeAnimateCompletion(row, col);
+  }
+
+  function maybeAnimateCompletion(row, col) {
+    const rowComplete = isRowComplete(row);
+    const colComplete = isColComplete(col);
+    if (rowComplete) animateRow(row);
+    if (colComplete) animateCol(col);
+  }
+
+  function isRowComplete(r) {
+    for (let c = 0; c < GRID_SIZE; c++) {
+      const cell = getCell(r, c);
+      const val = parseInt(cell.value);
+      if (!val || val !== solution[r][c]) return false;
+    }
+    return true;
+  }
+
+  function isColComplete(c) {
+    for (let r = 0; r < GRID_SIZE; r++) {
+      const cell = getCell(r, c);
+      const val = parseInt(cell.value);
+      if (!val || val !== solution[r][c]) return false;
+    }
+    return true;
+  }
+
+  function animateRow(r) {
+    for (let c = 0; c < GRID_SIZE; c++) {
+      const cell = getCell(r, c);
+      // Staggered delay to create a wave from left to right
+      const delay = c * 50;
+      setTimeout(() => {
+        cell.classList.add("completed-wave");
+        setTimeout(() => cell.classList.remove("completed-wave"), 800);
+      }, delay);
+    }
+  }
+
+  function animateCol(c) {
+    for (let r = 0; r < GRID_SIZE; r++) {
+      const cell = getCell(r, c);
+      // Staggered delay to create a wave from top to bottom
+      const delay = r * 50;
+      setTimeout(() => {
+        cell.classList.add("completed-wave");
+        setTimeout(() => cell.classList.remove("completed-wave"), 800);
+      }, delay);
+    }
   }
 
   function gameOver() {
@@ -443,9 +497,14 @@ document.addEventListener("DOMContentLoaded", () => {
   difficultyTabs.addEventListener("click", (e) => {
     const target = e.target;
     if (target && target.matches("button[data-difficulty]")) {
-      currentDifficulty = target.dataset.difficulty;
-      updateDifficultyTabsUI();
-      startNewGame();
+      const selected = target.dataset.difficulty;
+      if (selected === currentDifficulty) return;
+      const ok = window.confirm(`Switch to ${selected} and start a new game?`);
+      if (ok) {
+        currentDifficulty = selected;
+        updateDifficultyTabsUI();
+        startNewGame();
+      }
     }
   });
 
